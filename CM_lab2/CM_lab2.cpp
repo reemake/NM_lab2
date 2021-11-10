@@ -123,18 +123,6 @@ int main()
 
 	int IER = GetDataFromFile(file_input, n, x, y, xx, A, B);
 
-	for (int i = 0; i < n; i++)
-		cout << "x[" << i << "] = " << x[i] << ", ";
-	cout << endl;
-	for (int i = 0; i < n; i++)
-		cout << "y[" << i << "] = " << y[i] << ", ";
-	cout << endl;
-
-	cout << "n = " << n << endl;
-	cout << "A = " << A << endl;
-	cout << "B = " << B << endl;
-	cout << "xx = " << xx << endl;
-
 	if (IER == 1) {
 		file_output << "IER = 1 - кубический сплайн не может быть построен (n < 2)" << endl;
 		cout << "\tIER = 1 - кубический сплайн не может быть построен (n < 2)\n\n\n\n" << endl;
