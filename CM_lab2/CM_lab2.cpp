@@ -14,16 +14,12 @@ int GetDataFromFile(ifstream& file, int& n, float*& x, float*& y, float& xx, flo
 		if (n < 2) return 1;						// IER = 1
 
 		x = new float[n];							// заполнение вектора x из входного файла
-		for (int i = 0; i < n; i++)
-			x[i] = -99999;
 		int counter = 0;
 		while (counter != n) {
 			file >> x[counter++];
 		}
 
 		y = new float[n];							// заполнение вектора y из входного файла
-		for (int i = 0; i < n; i++)
-			y[i] = 0;
 		int counter1 = 0;
 		while (counter1 != n) {
 			file >> y[counter1++];
@@ -123,6 +119,7 @@ int main()
 
 	int IER = GetDataFromFile(file_input, n, x, y, xx, A, B);
 
+
 	if (IER == 1) {
 		file_output << "IER = 1 - кубический сплайн не может быть построен (n < 2)" << endl;
 		cout << "\tIER = 1 - кубический сплайн не может быть построен (n < 2)\n\n\n\n" << endl;
@@ -131,6 +128,7 @@ int main()
 	if (IER == 0 && xx_in_x(xx, x, n))
 	{
 		float* h = new float[n];
+		h[0] = 0;
 		for (int i = 1; i < n; i++) {
 			h[i] = x[i] - x[i - 1];
 			if (h[i] <= 0) {
@@ -138,6 +136,7 @@ int main()
 				break;
 			}
 		}
+
 		if (IER == 2) {
 				file_output << "IER = 2 - нарушен порядок возрастания аргумента во входном векторе x" << endl;
 				cout << "\tIER = 2 - нарушен порядок возрастания аргумента во входном векторе x\n\n\n" << endl;
@@ -151,9 +150,9 @@ int main()
 
 			coef_spline(h, y, a, b, c, d, A, B, n);
 
-			int k = get_segment_number(xx, x, n);				// k -  номер отрезка, которрому принадлежит xx
+			int k = get_segment_number(xx, x, n);					// k -  номер отрезка, которрому принадлежит xx
 			yy = calcF(k, xx, x, a, b, c, d);
-			SetDataToFile(file_output, n, xx, yy);				// запись результатов в выходной файл
+			SetDataToFile(file_output, n, xx, yy);					// запись результатов в выходной файл
 			cout << "\tIER = 0 - нет ошибки\n\n\n";
 
 		}
@@ -163,5 +162,6 @@ int main()
 		file_output << "IER = 3 - точка xx не принадлежит отрезку [x0, xn]" << endl;
 		cout << "\tIER = 3 - точка xx не принадлежит отрезку [x0, xn]\n\n\n" << endl;
 	}
+
 	return 0;
 }
