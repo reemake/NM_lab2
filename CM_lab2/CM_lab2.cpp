@@ -5,7 +5,7 @@ using namespace std;
 int getDataFromFile(ifstream& file, int& n, float*& x, float*& y, float& xx, float& A, float& B) {
 	if (!file.is_open())
 	{
-		cerr << "\tНевозможно открыть файл\n\n\n\n" << endl;
+		cerr << "Невозможно открыть файл\n\n\n\n" << endl;
 		system("pause");
 		exit(1);
 	}
@@ -34,7 +34,7 @@ void setDataToFile(ofstream& file, float xx, float yy)
 {
 	
 	file << "IER = 0 - нет ошибки\nРезультат:" << endl;
-	file << "Вычисленное интерполяционное функции в точке xx = " << xx << ": " << "yy = " << yy << endl;
+	file << "Для xx = " << xx << ": " << "yy = " << yy << endl;
 }
 
 bool xx_in_x(float xx, float* x, int n) {
@@ -48,7 +48,7 @@ int getSegmentNumber(float xx, float* x) {
 	return i;
 }
 
-float calcF(int k, float xx, float* x, float* a, float* b, float* c, float* d) {
+float calcS(int k, float xx, float* x, float* a, float* b, float* c, float* d) {
 	float yy = a[k] + b[k] * (xx - x[k]) + c[k] / 2.0f * (xx - x[k]) * (xx - x[k]) + d[k] / 6.0f * (xx - x[k]) * (xx - x[k]) * (xx - x[k]);
 	return yy;
 }
@@ -63,16 +63,14 @@ void progonka(float* aa, float* bb, float* cc, float* FF, float*& z, int n)
 	v[0] = 0.0f;       
 	xi[0] = 0.0f;        
 
-	for (int i = 1; i < n + 1; i++) {               
+	for (int i = 0; i < n; i++) {               
 		float znam = cc[i] + aa[i] * xi[i];      
-		xi[i] = -bb[i] / znam;
-		v[i] = (FF[i] - aa[i] * v[i]) / znam;      
+		xi[i+1] = -1.0f * bb[i] / znam;
+		v[i+1] = 1.0f * (FF[i] - aa[i] * v[i]) / znam;      
 	}
-
-	z[n] = (v[n] + xi[n] * v[n - 1]) / (1 - xi[n] * xi[n - 1]);
-	
+	z[n] = (FF[n] - aa[n] * v[n]) / (cc[n] + aa[n] * xi[n]);
 	for (int i = 1; i < n + 1; i++)
-		z[n - i] = v[n - i] + xi[n - i] * z[n - i + 1];
+		z[n - i] = v[n - i + 1] + xi[n - i + 1] * z[n - i + 1];
 }
 
 void coefSpline(float* h, float* f, float*& a, float*& b, float*& c, float*& d, float A, float B, int n) 
@@ -87,13 +85,12 @@ void coefSpline(float* h, float* f, float*& a, float*& b, float*& c, float*& d, 
 		bb[i] = h[i + 1];
 		cc[i] = 2.0f * (h[i] + h[i + 1]);
 		FF[i] = 6.0f * ((f[i + 1] - f[i]) / h[i + 1] - (f[i] - f[i - 1]) / h[i]);
-	}
-	aa[0] = 0.0f;          
+	}         
 	aa[n] = 0.5f;
 	bb[0] = 0.0f;
 	cc[0] = cc[n] = 1.0f;
 
-	FF[0] = A;														// левая граница
+	FF[0] = 1.0f * A;												   // левая граница
 	FF[n] = 3.0f / h[n] * (B - (f[n] - f[n - 1]) / h[n]);              // правая граница
 
 	progonka(aa, bb, cc, FF, c, n);
@@ -103,7 +100,6 @@ void coefSpline(float* h, float* f, float*& a, float*& b, float*& c, float*& d, 
 		d[i] = (c[i] - c[i - 1]) / h[i];
 		b[i] = c[i] / 2.0f * h[i] - d[i] / 6.0f * h[i] * h[i] + (f[i] - f[i - 1]) / h[i];
 	}
-	a[0] = b[0] = d[0] = 0.0f;
 }
 
 
@@ -116,19 +112,19 @@ int main()
 	float yy;
 	float A;
 	float B;
-	ifstream fileInput("in.txt");
-	ofstream fileOutput("out.txt", ios::app);
+	ifstream fileInput("test4.txt");
+	ofstream fileOutput("out.txt");
 
 	setlocale(LC_ALL, "RUS");
 
-	cout << "\n\n\n\tЛабораторная работа №1:\n\n\tВычисление интерполяционного значения таблично заданной функции f(x) в заданной точке с помощью кубического сплайна.\n";
-	cout << "\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t\tПроверила: Шабунина З.А.\n\t\t\t\t\t\t\tПодготовил: Сафонов Н.С.\n\n\n\n\n\n\n\n\n";
+	cout << "Лабораторная работа №1:\n\nВычисление интерполяционного значения таблично заданной функции f(x) в заданной точке с помощью кубического сплайна.\n";
+	cout << "Проверила: Шабунина З.А.\nПодготовил: Сафонов Н.С.\n\n\n";
 
 	int IER = getDataFromFile(fileInput, n, x, y, xx, A, B);
 
 	if (IER == 1) {
 		fileOutput << "IER = 1 - кубический сплайн не может быть построен (n < 2)" << endl;
-		cout << "\tIER = 1 - кубический сплайн не может быть построен (n < 2)\n\n\n\n" << endl;
+		cout << "IER = 1 - кубический сплайн не может быть построен (n < 2)\n\n\n" << endl;
 	} 
 
 	else if (IER == 0 && xx_in_x(xx, x, n))
@@ -145,7 +141,7 @@ int main()
 
 		if (IER == 2) {
 				fileOutput << "IER = 2 - нарушен порядок возрастания аргумента во входном векторе x" << endl;
-				cout << "\tIER = 2 - нарушен порядок возрастания аргумента во входном векторе x\n\n\n" << endl;
+				cout << "IER = 2 - нарушен порядок возрастания аргумента во входном векторе x\n\n\n" << endl;
 		}
 		else {
 
@@ -157,9 +153,9 @@ int main()
 			coefSpline(h, y, a, b, c, d, A, B, n);
 
 			int k = getSegmentNumber(xx, x);					// k -  номер отрезка, которрому принадлежит xx
-			yy = calcF(k, xx, x, a, b, c, d);
+			yy = calcS(k, xx, x, a, b, c, d);
 			setDataToFile(fileOutput, xx, yy);					// запись результатов в выходной файл
-			cout << "\tIER = 0 - нет ошибки\n\n\n";
+			cout << "IER = 0 - нет ошибки\n\n\n";
 
 		}
 	}
@@ -167,7 +163,7 @@ int main()
 	else
 	{
 		fileOutput << "IER = 3 - точка xx не принадлежит отрезку [x0, xn]" << endl;
-		cout << "\tIER = 3 - точка xx не принадлежит отрезку [x0, xn]\n\n\n" << endl;
+		cout << "IER = 3 - точка xx не принадлежит отрезку [x0, xn]\n\n\n" << endl;
 	}
 
 	return 0;
